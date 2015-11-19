@@ -26,7 +26,30 @@ function! SelectTextObject()
             call add(delimiter_lens, maxlen)
             execute "normal! \<esc>"
         else
-            call add(delimiter_lens, strlen(@y))
+            " due to strange vim semantics, sometimes we can get a selection
+            "   from i[foo] or a[foo] that did not include the cursor position.
+            "   fix that:
+            let markpos = getpos("'m")
+            let startpos = getpos("'<")
+            let endpos = getpos("'>")
+            let err = 0
+            if (markpos[1] < startpos[1]) || (markpos[1] > endpos[1])
+                let err = 1
+            elseif markpos[1] == startpos[1]
+                if markpos[2] < startpos[2]
+                    let err = 1
+                endif
+            elseif markpos[1] == endpos[1]
+                if markpos[2] > endpos[2]
+                    let err = 1
+                endif
+            endif
+
+            if err
+                call add(delimiter_lens, maxlen)
+            else
+                call add(delimiter_lens, strlen(@y))
+            endif
         endif
     endfor
 
