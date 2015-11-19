@@ -54,8 +54,8 @@ function! SelectTextObject()
     endfor
 
     if min(delimiter_lens) == maxlen
-        " no delimiters to select inside... just spit out a 1-char selection
-        execute 'normal! `mv'
+        " no delimiters to select inside... just spit out an error message
+        echoerr 'vim-doubles: no delimiters found'
     else
         let idx = index(delimiter_lens, min(delimiter_lens))
         execute 'normal! `mvi' . delimiters[idx]
