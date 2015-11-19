@@ -4,6 +4,7 @@ function! SelectTextObject()
 
     " set a mark so we know where we started
     normal! mm
+    let wv = winsaveview()
 
     " count length of text inside various delimiters
     let delimiters = ['(', '[', '{', '''', '"']
@@ -60,6 +61,15 @@ function! SelectTextObject()
         let idx = index(delimiter_lens, min(delimiter_lens))
         execute 'normal! `mvi' . delimiters[idx]
     endif
+
+    call winrestview({'topline': wv['topline']})
+endfunction
+
+function! VSelectTextObject()
+    " let's be as safe as possible with mappings and such here
+    normal! v
+    normal ii
 endfunction
 
 vnoremap <silent> ii :<C-u>call SelectTextObject()<cr>
+onoremap <silent> ii :<C-u>call VSelectTextObject()<cr>
