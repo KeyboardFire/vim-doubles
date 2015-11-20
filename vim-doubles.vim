@@ -1,5 +1,5 @@
-function! SelectTextObject()
-    let nomatch = 'x([{''"x"''}])x'
+function! SelectTextObject(type)
+    let nomatch = 'x([{''"<x>"''}])x'
     let maxlen = 99999999
 
     " set a mark so we know where we started
@@ -7,7 +7,7 @@ function! SelectTextObject()
     let wv = winsaveview()
 
     " count length of text inside various delimiters
-    let delimiters = ['(', '[', '{', '''', '"']
+    let delimiters = ['(', '[', '{', '''', '"', '<']
     let delimiter_lens = []
     for d in delimiters
         let @y = nomatch
@@ -21,7 +21,7 @@ function! SelectTextObject()
         "   original register
         " to combat case b.), we simply carefully select the register's
         "   original value such that it is impossible for this to be the case.
-        execute 'normal! `mvi' . d . '"yy'
+        execute 'normal! `mv' . a:type . d . '"yy'
         if @y == nomatch
             " a very ugly hack follows :/
             call add(delimiter_lens, maxlen)
@@ -59,17 +59,19 @@ function! SelectTextObject()
         echoerr 'vim-doubles: no delimiters found'
     else
         let idx = index(delimiter_lens, min(delimiter_lens))
-        execute 'normal! `mvi' . delimiters[idx]
+        execute 'normal! `mv' . a:type . delimiters[idx]
     endif
 
     call winrestview({'topline': wv['topline']})
 endfunction
 
-function! VSelectTextObject()
+function! VSelectTextObject(type)
     " let's be as safe as possible with mappings and such here
     normal! v
-    normal ii
+    execute 'normal ' . a:type . a:type
 endfunction
 
-vnoremap <silent> ii :<C-u>call SelectTextObject()<cr>
-onoremap <silent> ii :<C-u>call VSelectTextObject()<cr>
+vnoremap <silent> ii :<C-u>call SelectTextObject('i')<cr>
+onoremap <silent> ii :<C-u>call VSelectTextObject('i')<cr>
+vnoremap <silent> aa :<C-u>call SelectTextObject('a')<cr>
+onoremap <silent> aa :<C-u>call VSelectTextObject('a')<cr>
